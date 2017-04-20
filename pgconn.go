@@ -2,6 +2,7 @@ package pgconn
 
 import (
 	"database/sql"
+	_ "github.com/lib/pq"
 	"errors"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
@@ -9,14 +10,14 @@ import (
 	"time"
 )
 
-type PostgreDB struct {
+type PostgresDB struct {
 	*sql.DB
 	connectStr string
 }
 
 var ErrRetryCount = errors.New("Retry count must be greater than 1")
 
-func OpenAndConnect(connectString string, retryCount int) (*PostgreDB, error) {
+func OpenAndConnect(connectString string, retryCount int) (*PostgresDB, error) {
 	if retryCount < 1 {
 		return nil, ErrRetryCount
 	}
@@ -46,11 +47,11 @@ func OpenAndConnect(connectString string, retryCount int) (*PostgreDB, error) {
 		return nil, dbError
 	}
 
-	return &PostgreDB{DB: db, connectStr: connectString}, nil
+	return &PostgresDB{DB: db, connectStr: connectString}, nil
 }
 
 //Reconnect to the database. Useful when a loss of connection has been detected
-func (pgdb *PostgreDB) Reconnect(retryCount int) error {
+func (pgdb *PostgresDB) Reconnect(retryCount int) error {
 	pgdb.Close()
 	db, err := OpenAndConnect(pgdb.connectStr, retryCount)
 	if err != nil {
