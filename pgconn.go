@@ -70,6 +70,7 @@ func BuildConnectString(user, password, host, port, dbName string) string {
 
 //IsConnectionError returns error if the argument is a connection error
 func IsConnectionError(err error) bool {
+	//Observed empirically...
 	errStr := err.Error()
-	return strings.HasPrefix(errStr, "ORA-03114") || strings.HasPrefix(errStr, "ORA-03113")
+	return strings.Contains(errStr, "connection refused")
 }

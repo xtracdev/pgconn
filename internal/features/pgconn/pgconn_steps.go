@@ -6,12 +6,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"time"
+	"errors"
 )
 
 var connectStr = ""
 var maskedConnectStr = ""
 
-
+var bogusConnectStr = "user=luser password=passw0rd dbname=postgres host=localhost port=15432 sslmode=disable"
 
 
 
@@ -21,7 +22,7 @@ func init() {
 	maskedConnectStr = envConnect.MaskedConnectString()
 
 	var db *pgconn.PostgresDB
-	//var noConnectError error
+	var noConnectError error
 
 	Given(`^a running postgres instance$`, func() {
 		log.Infof("Postgres instance available via %s assumed", maskedConnectStr)
@@ -53,31 +54,48 @@ func init() {
 	})
 
 	Given(`^a connection string with no listener$`, func() {
-		T.Skip() // pending
+		log.Infof("No pg instance available via %s assumed", bogusConnectStr)
 	})
 
 	When(`^I connect to no listener$`, func() {
-		T.Skip() // pending
+		db, noConnectError = pgconn.OpenAndConnect(bogusConnectStr, 3)
 	})
 
 	Then(`^an error is returned$`, func() {
-		T.Skip() // pending
+		assert.NotNil(T, noConnectError)
 	})
 
 	Given(`^a loss of database connectivity$`, func() {
-		T.Skip() // pending
+		var err error
+		db, err = pgconn.OpenAndConnect(connectStr, 10)
+		if assert.Nil(T, err) {
+			err = db.Close()
+			assert.Nil(T, err)
+		}
 	})
 
 	When(`^I detect I've lost connectivity$`, func() {
-		T.Skip() // pending
+		assert.True(T, pgconn.IsConnectionError(errors.New("connection refused")), "Expected a connection error")
 	})
 
 	Then(`^I can reconnect$`, func() {
-		T.Skip() // pending
+		err := db.Reconnect(3)
+		assert.Nil(T, err)
 	})
 
 	And(`^I can select data after reconnecting$`, func() {
-		T.Skip() // pending
+		rows, err := db.Query("select now from now()")
+		if assert.Nil(T, err) {
+			defer rows.Close()
+
+			for rows.Next() {
+				var ts time.Time
+				rows.Scan(&ts)
+				log.Infof("select from now is %s", ts.Format(time.RFC3339))
+			}
+
+			assert.Nil(T, rows.Err())
+		}
 	})
 
 }
