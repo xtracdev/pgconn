@@ -9,4 +9,5 @@ jobs:
       - run: echo "hello world"
       - run: go get -v -t
       - run: go test
+      - run: go get github.com/gucumber/gucumber/cmd/gucumber
       - run: gucumber
