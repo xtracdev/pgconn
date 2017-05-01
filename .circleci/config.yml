@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/pgconn
     docker:
-      - image: 1.8.1-onbuild
+      - image: golang:1.8.1-onbuild
     steps:
       - checkout
       - run: echo "hello world
