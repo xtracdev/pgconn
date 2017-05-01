@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/pgconn
+    working_directory: /go/src/github.com/xtracdev/pgconn
     docker:
       - image: golang:1.8.1-onbuild
     steps:
