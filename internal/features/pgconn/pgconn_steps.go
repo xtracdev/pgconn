@@ -17,7 +17,12 @@ var bogusConnectStr = "user=luser password=passw0rd dbname=postgres host=localho
 
 
 func init() {
-	envConnect,_ := pgconn.NewEnvConfig()
+	envConnect,envError := pgconn.NewEnvConfig()
+	if envError != nil {
+		log.Fatal("No config specified for gucumber test")
+	}
+
+
 	connectStr = envConnect.ConnectString()
 	maskedConnectStr = envConnect.MaskedConnectString()
 
