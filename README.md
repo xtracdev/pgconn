@@ -1,5 +1,6 @@
 ## PGConn - Postgres Connection Utilities
 
+[![CircleCI](https://circleci.com/gh/xtracdev/pgconn.svg?style=svg)](https://circleci.com/gh/xtracdev/pgconn)
 
 This package provide a simple mechanism to extend the Postgres sql.DB
 implementation with some additional capabilities:
