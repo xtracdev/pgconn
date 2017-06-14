@@ -17,7 +17,7 @@ const (
 	maxConns         = "DB_MAX_OPEN_CONNS"
 	idleConns        = "DB_MAX_IDLE_CONNS"
 	defaultMaxConns  = 6
-	defaultIdleConns = 3
+	defaultIdleConns = 1
 )
 
 type PostgresDB struct {
@@ -58,8 +58,8 @@ func OpenAndConnect(connectString string, retryCount int) (*PostgresDB, error) {
 	}
 
 	pgdb := &PostgresDB{DB: db, connectStr: connectString}
-	pgdb.SetMaxOpenConns()
-	pgdb.SetMaxIdleConns()
+	pgdb.setMaxOpenConns()
+	pgdb.setMaxIdleConns()
 
 	return pgdb, nil
 }
@@ -76,7 +76,7 @@ func (pgdb *PostgresDB) Reconnect(retryCount int) error {
 	return nil
 }
 
-func (pgdb *PostgresDB) SetMaxOpenConns() {
+func (pgdb *PostgresDB) setMaxOpenConns() {
 	var max int
 	max = defaultMaxConns
 
@@ -93,7 +93,7 @@ func (pgdb *PostgresDB) SetMaxOpenConns() {
 	pgdb.DB.SetMaxOpenConns(max)
 }
 
-func (pgdb *PostgresDB) SetMaxIdleConns() {
+func (pgdb *PostgresDB) setMaxIdleConns() {
 	var idle int
 	idle = defaultIdleConns
 
