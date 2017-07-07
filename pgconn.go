@@ -4,13 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 	_ "github.com/lib/pq"
+	"github.com/xtracdev/envinject"
 )
 
 const (
@@ -22,14 +22,21 @@ const (
 
 type PostgresDB struct {
 	*sql.DB
-	connectStr string
+	injectedEnv *envinject.InjectedEnv
 }
 
 var ErrRetryCount = errors.New("Retry count must be greater than 1")
 
-func OpenAndConnect(connectString string, retryCount int) (*PostgresDB, error) {
+
+
+func OpenAndConnect(env *envinject.InjectedEnv, retryCount int) (*PostgresDB, error) {
 	if retryCount < 1 {
 		return nil, ErrRetryCount
+	}
+
+	connectString, err := ConnectStringFromInjectedEnv(env)
+	if err != nil {
+		return nil,err
 	}
 
 	log.Infof("Open the database, %d retries", retryCount)
@@ -57,7 +64,7 @@ func OpenAndConnect(connectString string, retryCount int) (*PostgresDB, error) {
 		return nil, dbError
 	}
 
-	pgdb := &PostgresDB{DB: db, connectStr: connectString}
+	pgdb := &PostgresDB{DB: db, injectedEnv: env}
 	pgdb.setMaxOpenConns()
 	pgdb.setMaxIdleConns()
 
@@ -67,7 +74,7 @@ func OpenAndConnect(connectString string, retryCount int) (*PostgresDB, error) {
 //Reconnect to the database. Useful when a loss of connection has been detected
 func (pgdb *PostgresDB) Reconnect(retryCount int) error {
 	pgdb.Close()
-	db, err := OpenAndConnect(pgdb.connectStr, retryCount)
+	db, err := OpenAndConnect(pgdb.injectedEnv, retryCount)
 	if err != nil {
 		return err
 	}
@@ -76,36 +83,38 @@ func (pgdb *PostgresDB) Reconnect(retryCount int) error {
 	return nil
 }
 
-func (pgdb *PostgresDB) setMaxOpenConns() {
-	var max int
-	max = defaultMaxConns
-
-	env := os.Getenv(maxConns)
+func (pgdb *PostgresDB) getIntFromEnv(varName string, defaultVal int) int {
+	var val = defaultVal
+	env := pgdb.injectedEnv.Getenv(varName)
 	if env != "" {
 		var err error
-		max, err = strconv.Atoi(env)
+		val, err = strconv.Atoi(env)
 		if err != nil {
-			log.Infof("Failed to convert %s value, setting default value", maxConns)
-			max = defaultMaxConns
+			log.Infof("Failed to convert %s value, setting default value", varName)
+			val = defaultVal
 		}
 	}
+
+	return val
+}
+
+func (pgdb *PostgresDB) getMaxConns() int {
+	return pgdb.getIntFromEnv(maxConns,defaultMaxConns)
+}
+
+func (pgdb *PostgresDB) getIdleConns() int {
+	return pgdb.getIntFromEnv(idleConns,defaultIdleConns)
+}
+
+
+func (pgdb *PostgresDB) setMaxOpenConns() {
+	var max = pgdb.getMaxConns()
 	log.Infof("Setting %s to %d connections...", maxConns, max)
 	pgdb.DB.SetMaxOpenConns(max)
 }
 
 func (pgdb *PostgresDB) setMaxIdleConns() {
-	var idle int
-	idle = defaultIdleConns
-
-	env := os.Getenv(idleConns)
-	if env != "" {
-		var err error
-		idle, err = strconv.Atoi(env)
-		if err != nil {
-			log.Infof("Failed to convert %s value, setting default value", idleConns)
-			idle = defaultIdleConns
-		}
-	}
+	var idle = pgdb.getIdleConns()
 	log.Infof("Setting %s to %d connections...", idleConns, idle)
 	pgdb.DB.SetMaxIdleConns(idle)
 }
