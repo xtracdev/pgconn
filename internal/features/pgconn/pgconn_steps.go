@@ -1,14 +1,14 @@
 package pgconn
 
 import (
-	. "github.com/gucumber/gucumber"
-	"github.com/xtracdev/pgconn"
-	log "github.com/Sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"time"
 	"errors"
-	"os"
+	log "github.com/Sirupsen/logrus"
+	. "github.com/gucumber/gucumber"
+	"github.com/stretchr/testify/assert"
 	"github.com/xtracdev/envinject"
+	"github.com/xtracdev/pgconn"
+	"os"
+	"time"
 )
 
 var connectStr = ""
@@ -16,13 +16,11 @@ var maskedConnectStr = ""
 
 var bogusConnectStr = "user=luser password=passw0rd dbname=postgres host=localhost port=15432 sslmode=disable"
 
-
-
 func init() {
 	os.Setenv(envinject.ParamPrefixEnvVar, "")
-	env,_ := envinject.NewInjectedEnv()
+	env, _ := envinject.NewInjectedEnv()
 
-	maskedConnectStr,_ = pgconn.MaskedConnectStringFromInjectedEnv(env)
+	maskedConnectStr, _ = pgconn.MaskedConnectStringFromInjectedEnv(env)
 
 	var db *pgconn.PostgresDB
 	var noConnectError error
@@ -64,7 +62,7 @@ func init() {
 
 		currentPort := os.Getenv(pgconn.DBPort)
 		os.Setenv(pgconn.DBPort, "12345")
-		bogusEnv,_ := envinject.NewInjectedEnv()
+		bogusEnv, _ := envinject.NewInjectedEnv()
 
 		db, noConnectError = pgconn.OpenAndConnect(bogusEnv, 3)
 		os.Setenv(pgconn.DBPort, currentPort)

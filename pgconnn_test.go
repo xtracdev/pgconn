@@ -1,12 +1,12 @@
 package pgconn
 
 import (
+	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/xtracdev/envinject"
 	"os"
 	"strings"
 	"testing"
-	"github.com/xtracdev/envinject"
-	"errors"
 )
 
 func cleanEnv() {
@@ -80,19 +80,19 @@ func TestConfig(t *testing.T) {
 
 func TestNilEnvProducesError(t *testing.T) {
 	_, err := ConnectStringFromInjectedEnv(nil)
-	assert.NotNil(t,err)
+	assert.NotNil(t, err)
 
-	_,err = MaskedConnectStringFromInjectedEnv(nil)
-	assert.NotNil(t,err)
+	_, err = MaskedConnectStringFromInjectedEnv(nil)
+	assert.NotNil(t, err)
 }
 
 func TestGetIntFromEnv(t *testing.T) {
 	var readIntTests = []struct {
-		testName            string
-		varName             string
-		varValue            string
-		defaultVal          int
-		expected            int
+		testName   string
+		varName    string
+		varValue   string
+		defaultVal int
+		expected   int
 	}{
 		{
 			"read from environment",
@@ -121,7 +121,7 @@ func TestGetIntFromEnv(t *testing.T) {
 		t.Run(test.testName, func(t *testing.T) {
 			os.Setenv(test.varName, test.varValue)
 			env, _ := envinject.NewInjectedEnv()
-			pgdbShell := PostgresDB{nil,env}
+			pgdbShell := PostgresDB{nil, env}
 			v := pgdbShell.getIntFromEnv(test.varName, test.defaultVal)
 
 			assert.Equal(t, v, test.expected)
@@ -132,7 +132,7 @@ func TestGetIntFromEnv(t *testing.T) {
 func TestGetDefaultMaxConnections(t *testing.T) {
 	os.Unsetenv(maxConns)
 	env, _ := envinject.NewInjectedEnv()
-	pgdbShell := PostgresDB{nil,env}
+	pgdbShell := PostgresDB{nil, env}
 	max := pgdbShell.getMaxConns()
 	assert.Equal(t, defaultMaxConns, max)
 }
@@ -140,7 +140,7 @@ func TestGetDefaultMaxConnections(t *testing.T) {
 func TestGetDefaultIdleConnections(t *testing.T) {
 	os.Unsetenv(idleConns)
 	env, _ := envinject.NewInjectedEnv()
-	pgdbShell := PostgresDB{nil,env}
+	pgdbShell := PostgresDB{nil, env}
 	max := pgdbShell.getIdleConns()
 	assert.Equal(t, defaultIdleConns, max)
 }

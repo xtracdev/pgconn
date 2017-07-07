@@ -27,8 +27,6 @@ type PostgresDB struct {
 
 var ErrRetryCount = errors.New("Retry count must be greater than 1")
 
-
-
 func OpenAndConnect(env *envinject.InjectedEnv, retryCount int) (*PostgresDB, error) {
 	if retryCount < 1 {
 		return nil, ErrRetryCount
@@ -36,7 +34,7 @@ func OpenAndConnect(env *envinject.InjectedEnv, retryCount int) (*PostgresDB, er
 
 	connectString, err := ConnectStringFromInjectedEnv(env)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	log.Infof("Open the database, %d retries", retryCount)
@@ -99,13 +97,12 @@ func (pgdb *PostgresDB) getIntFromEnv(varName string, defaultVal int) int {
 }
 
 func (pgdb *PostgresDB) getMaxConns() int {
-	return pgdb.getIntFromEnv(maxConns,defaultMaxConns)
+	return pgdb.getIntFromEnv(maxConns, defaultMaxConns)
 }
 
 func (pgdb *PostgresDB) getIdleConns() int {
-	return pgdb.getIntFromEnv(idleConns,defaultIdleConns)
+	return pgdb.getIntFromEnv(idleConns, defaultIdleConns)
 }
-
 
 func (pgdb *PostgresDB) setMaxOpenConns() {
 	var max = pgdb.getMaxConns()

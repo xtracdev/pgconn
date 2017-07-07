@@ -3,8 +3,8 @@ package pgconn
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"github.com/xtracdev/envinject"
+	"strings"
 )
 
 type envConfig struct {
@@ -75,7 +75,7 @@ func newEnvConfig(env *envinject.InjectedEnv) (*envConfig, error) {
 
 }
 
-func ConnectStringFromInjectedEnv(env *envinject.InjectedEnv) (string,error) {
+func ConnectStringFromInjectedEnv(env *envinject.InjectedEnv) (string, error) {
 	if env == nil {
 		return "", errors.New("Nil InjectedEnv")
 	}
@@ -88,7 +88,7 @@ func ConnectStringFromInjectedEnv(env *envinject.InjectedEnv) (string,error) {
 	return config.connectString(), nil
 }
 
-func MaskedConnectStringFromInjectedEnv(env *envinject.InjectedEnv) (string,error) {
+func MaskedConnectStringFromInjectedEnv(env *envinject.InjectedEnv) (string, error) {
 	if env == nil {
 		return "", errors.New("Nil InjectedEnv")
 	}
