@@ -4,14 +4,14 @@ import (
 	"github.com/xtracdev/pgconn"
 	"time"
 	"log"
+	"github.com/xtracdev/envinject"
 )
 
 
 func main() {
-	envConnect,_ := pgconn.NewEnvConfig()
-	connectStr := envConnect.ConnectString()
+	envConnect,_ := envinject.NewInjectedEnv()
 
-	db, err := pgconn.OpenAndConnect(connectStr, 10)
+	db, err := pgconn.OpenAndConnect(envConnect, 10)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
