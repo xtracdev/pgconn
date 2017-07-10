@@ -1,12 +1,14 @@
 package pgconn
 
 import (
-	. "github.com/gucumber/gucumber"
-	"github.com/xtracdev/pgconn"
-	log "github.com/Sirupsen/logrus"
-	"github.com/stretchr/testify/assert"
-	"time"
 	"errors"
+	log "github.com/Sirupsen/logrus"
+	. "github.com/gucumber/gucumber"
+	"github.com/stretchr/testify/assert"
+	"github.com/xtracdev/envinject"
+	"github.com/xtracdev/pgconn"
+	"os"
+	"time"
 )
 
 var connectStr = ""
@@ -14,17 +16,11 @@ var maskedConnectStr = ""
 
 var bogusConnectStr = "user=luser password=passw0rd dbname=postgres host=localhost port=15432 sslmode=disable"
 
-
-
 func init() {
-	envConnect,envError := pgconn.NewEnvConfig()
-	if envError != nil {
-		log.Fatal("No config specified for gucumber test")
-	}
+	os.Setenv(envinject.ParamPrefixEnvVar, "")
+	env, _ := envinject.NewInjectedEnv()
 
-
-	connectStr = envConnect.ConnectString()
-	maskedConnectStr = envConnect.MaskedConnectString()
+	maskedConnectStr, _ = pgconn.MaskedConnectStringFromInjectedEnv(env)
 
 	var db *pgconn.PostgresDB
 	var noConnectError error
@@ -39,7 +35,7 @@ func init() {
 
 	Then(`^a connection is returned$`, func() {
 		var err error
-		db, err = pgconn.OpenAndConnect(connectStr, 10)
+		db, err = pgconn.OpenAndConnect(env, 10)
 		assert.Nil(T, err)
 	})
 
@@ -63,7 +59,13 @@ func init() {
 	})
 
 	When(`^I connect to no listener$`, func() {
-		db, noConnectError = pgconn.OpenAndConnect(bogusConnectStr, 3)
+
+		currentPort := os.Getenv(pgconn.DBPort)
+		os.Setenv(pgconn.DBPort, "12345")
+		bogusEnv, _ := envinject.NewInjectedEnv()
+
+		db, noConnectError = pgconn.OpenAndConnect(bogusEnv, 3)
+		os.Setenv(pgconn.DBPort, currentPort)
 	})
 
 	Then(`^an error is returned$`, func() {
@@ -72,7 +74,7 @@ func init() {
 
 	Given(`^a loss of database connectivity$`, func() {
 		var err error
-		db, err = pgconn.OpenAndConnect(connectStr, 10)
+		db, err = pgconn.OpenAndConnect(env, 10)
 		if assert.Nil(T, err) {
 			err = db.Close()
 			assert.Nil(T, err)

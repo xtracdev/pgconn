@@ -1,17 +1,16 @@
 package main
 
 import (
+	"github.com/xtracdev/envinject"
 	"github.com/xtracdev/pgconn"
-	"time"
 	"log"
+	"time"
 )
 
-
 func main() {
-	envConnect,_ := pgconn.NewEnvConfig()
-	connectStr := envConnect.ConnectString()
+	envConnect, _ := envinject.NewInjectedEnv()
 
-	db, err := pgconn.OpenAndConnect(connectStr, 10)
+	db, err := pgconn.OpenAndConnect(envConnect, 10)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -34,6 +33,6 @@ func main() {
 			log.Printf(err.Error())
 		}
 
-		time.Sleep(5*time.Second)
+		time.Sleep(5 * time.Second)
 	}
 }
