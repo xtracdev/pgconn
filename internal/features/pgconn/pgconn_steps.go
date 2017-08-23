@@ -17,7 +17,7 @@ var maskedConnectStr = ""
 var bogusConnectStr = "user=luser password=passw0rd dbname=postgres host=localhost port=15432 sslmode=disable"
 
 func init() {
-	os.Setenv(envinject.ParamPrefixEnvVar, "")
+	os.Setenv(envinject.ParamPathEnvVar, "")
 	env, _ := envinject.NewInjectedEnv()
 
 	maskedConnectStr, _ = pgconn.MaskedConnectStringFromInjectedEnv(env)
